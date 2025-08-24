@@ -1,5 +1,5 @@
 [workspace]
-members = ["gitingest", "gitingest-cli", "gitingest-python"]
+members = ["gitingest", "gitingest-cli"]
 resolver = "2"
 
 [workspace.dependencies]
