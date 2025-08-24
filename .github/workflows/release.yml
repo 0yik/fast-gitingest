@@ -17,9 +17,6 @@ jobs:
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
             name: linux-x64
-          - target: x86_64-unknown-linux-musl
-            os: ubuntu-latest
-            name: linux-x64-musl
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-latest
             name: linux-arm64
@@ -48,24 +45,10 @@ jobs:
           targets: ${{ matrix.target }}
 
       - name: Install cross-compilation tools (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
           sudo apt-get update
-          
-          # Install musl cross-compiler with C++ support
-          if [ "${{ matrix.target }}" = "x86_64-unknown-linux-musl" ]; then
-            sudo apt-get install -y musl-tools musl-dev
-            # Install musl-based g++ compiler that includes C++ standard library
-            wget -q https://github.com/richfelker/musl-cross-make/releases/download/v0.9.9/x86_64-linux-musl-cross.tgz
-            tar -xzf x86_64-linux-musl-cross.tgz
-            sudo mv x86_64-linux-musl-cross /opt/
-            echo "/opt/x86_64-linux-musl-cross/bin" >> $GITHUB_PATH
-          fi
-          
-          # Install ARM64 cross-compiler
-          if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
-            sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-          fi
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
           
       - name: Cache cargo
         uses: actions/cache@v3
@@ -76,21 +59,12 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Set environment variables (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Set environment variables for ARM64 (Linux)
+        if: matrix.os == 'ubuntu-latest' && matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
-          # Set cross-compilation environment variables
-          if [ "${{ matrix.target }}" = "x86_64-unknown-linux-musl" ]; then
-            echo "CC_x86_64_unknown_linux_musl=x86_64-linux-musl-gcc" >> $GITHUB_ENV
-            echo "CXX_x86_64_unknown_linux_musl=x86_64-linux-musl-g++" >> $GITHUB_ENV
-            echo "CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=x86_64-linux-musl-gcc" >> $GITHUB_ENV
-          fi
-          
-          if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
-            echo "CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
-            echo "CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++" >> $GITHUB_ENV
-            echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
-          fi
+          echo "CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+          echo "CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++" >> $GITHUB_ENV
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
 
       - name: Build binary
         run: |
@@ -164,7 +138,6 @@ jobs:
             
             Download the appropriate binary for your platform:
             - Linux x64: `gitingest-linux-x64`
-            - Linux x64 (musl): `gitingest-linux-x64-musl`
             - Linux ARM64: `gitingest-linux-arm64`
             - macOS x64: `gitingest-macos-x64`
             - macOS ARM64: `gitingest-macos-arm64`
