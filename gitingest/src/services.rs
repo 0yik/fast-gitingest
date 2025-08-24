@@ -12,9 +12,9 @@ impl IngestService {
     pub async fn process_repository(
         request: IngestRequest,
         config: &AppConfig,
-        id: Uuid,
     ) -> Result<IngestResponse> {
         let start_time = Instant::now();
+        let id = Uuid::new_v4();
         
         // Parse the repository URL
         let repository = UrlParser::parse_git_url(&request.input_text)?;
