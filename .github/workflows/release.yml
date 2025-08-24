@@ -116,9 +116,12 @@ jobs:
       - name: Prepare release assets
         run: |
           mkdir -p release-assets
-          find artifacts -type f -executable -o -name "*.exe" | while read file; do
+          # Copy all binary files from artifacts
+          find artifacts -type f \( -name "gitingest-*" \) | while read file; do
             cp "$file" release-assets/
           done
+          # Make Unix binaries executable
+          chmod +x release-assets/gitingest-* 2>/dev/null || true
           ls -la release-assets/
 
       - name: Create checksums
