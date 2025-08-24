@@ -88,20 +88,8 @@ pub struct FileNode {
     pub relative_path: String,
     pub node_type: FileNodeType,
     pub size: u64,
-    pub content: Option<String>,
+    pub has_content: bool, // Uses lazy loading - content loaded on demand
     pub children: Vec<FileNode>,
-    pub depth: u32,
-}
-
-#[derive(Debug, Clone)]
-pub struct FileNodeLazy {
-    pub name: String,
-    pub path: PathBuf,
-    pub relative_path: String,
-    pub node_type: FileNodeType,
-    pub size: u64,
-    pub has_content: bool,
-    pub children: Vec<FileNodeLazy>,
     pub depth: u32,
 }
 
@@ -111,7 +99,7 @@ pub trait ContentWriter {
     fn write_content(&self, writer: &mut dyn Write) -> std::io::Result<()>;
 }
 
-impl ContentWriter for FileNodeLazy {
+impl ContentWriter for FileNode {
     fn write_content(&self, writer: &mut dyn Write) -> std::io::Result<()> {
         if self.node_type == FileNodeType::File && self.has_content {
             writeln!(writer, "{}:", self.relative_path)?;

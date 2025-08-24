@@ -57,6 +57,16 @@ impl IngestService {
             }
         }
         
+        // Add include patterns from CLI
+        if let Some(patterns) = request.include_patterns {
+            matcher.include_patterns.extend(patterns);
+        }
+        
+        // Add exclude patterns from CLI  
+        if let Some(patterns) = request.exclude_patterns {
+            matcher.exclude_patterns.extend(patterns);
+        }
+        
         // Add gitignore patterns
         let gitignore_path = local_path.join(".gitignore");
         PatternService::add_gitignore_patterns(&mut matcher, &gitignore_path)?;
@@ -64,10 +74,10 @@ impl IngestService {
         // Set limits from config and request
         let max_file_size = request.max_file_size.unwrap_or(config.max_file_size);
         
-        // Scan the repository with memory-efficient lazy loading
-        log::info!("Starting memory-efficient lazy file scanning...");
+        // Scan the repository with memory-efficient loading
+        log::info!("Starting memory-efficient file scanning...");
         let scan_start = Instant::now();
-        let file_tree_lazy = FileService::scan_directory_lazy(
+        let file_tree = FileService::scan_directory(
             &local_path,
             &matcher,
             max_file_size,
@@ -77,25 +87,25 @@ impl IngestService {
             config.batch_size,
         ).await?;
         let scan_duration = scan_start.elapsed();
-        log::info!("Lazy file scanning completed in {:.2}s", scan_duration.as_secs_f64());
+        log::info!("File scanning completed in {:.2}s", scan_duration.as_secs_f64());
         
         // Generate tree string (lightweight)
         log::info!("Starting tree generation...");
         let generation_start = Instant::now();
-        let tree = FileService::generate_tree_string_lazy(&file_tree_lazy, "", true);
+        let tree = FileService::generate_tree_string(&file_tree, "", true);
         let generation_duration = generation_start.elapsed();
         log::info!("Tree generation completed in {:.2}s", generation_duration.as_secs_f64());
         
-        // Calculate statistics from lazy tree
-        let files_analyzed = Self::count_files_lazy(&file_tree_lazy);
-        let total_size_bytes = Self::calculate_total_size_lazy(&file_tree_lazy);
+        // Calculate statistics from file tree
+        let files_analyzed = Self::count_files(&file_tree);
+        let total_size_bytes = Self::calculate_total_size(&file_tree);
         let processing_time = start_time.elapsed();
         
         // Write content to file directly (streaming approach)
         log::info!("Starting streaming content write...");
         let content_start = Instant::now();
         let temp_content_path = local_path.join("temp_content.txt");
-        FileService::write_content_to_file(&file_tree_lazy, &temp_content_path)?;
+        FileService::write_content_to_file(&file_tree, &temp_content_path)?;
         
         // Read back only for response (could be optimized further by not reading back)
         let content = std::fs::read_to_string(&temp_content_path)
@@ -167,21 +177,21 @@ impl IngestService {
         Some(content.len() / 4)
     }
     
-    fn count_files_lazy(node: &crate::models::FileNodeLazy) -> usize {
+    fn count_files(node: &crate::models::FileNode) -> usize {
         match node.node_type {
             crate::models::FileNodeType::File => 1,
             crate::models::FileNodeType::Directory => {
-                node.children.iter().map(|child| Self::count_files_lazy(child)).sum()
+                node.children.iter().map(|child| Self::count_files(child)).sum()
             }
             crate::models::FileNodeType::Symlink => 0,
         }
     }
 
-    fn calculate_total_size_lazy(node: &crate::models::FileNodeLazy) -> u64 {
+    fn calculate_total_size(node: &crate::models::FileNode) -> u64 {
         match node.node_type {
             crate::models::FileNodeType::File => node.size,
             crate::models::FileNodeType::Directory => {
-                node.children.iter().map(|child| Self::calculate_total_size_lazy(child)).sum()
+                node.children.iter().map(|child| Self::calculate_total_size(child)).sum()
             }
             crate::models::FileNodeType::Symlink => 0,
         }
