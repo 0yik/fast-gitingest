@@ -752,7 +752,7 @@ dependencies = [
 
 [[package]]
 name = "gitingest"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -786,7 +786,7 @@ dependencies = [
 
 [[package]]
 name = "gitingest-cli"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "clap",
