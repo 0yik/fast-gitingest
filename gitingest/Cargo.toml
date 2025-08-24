@@ -1,0 +1,49 @@
+[package]
+name = "gitingest"
+version = "0.1.0"
+edition = "2024"
+authors = ["Anang Aji Rahmawan <aji.abuismail@gmail.com>"]
+description = "Fast Git repository ingestion and analysis core library"
+license = "MIT"
+repository = "https://github.com/0yik/fast-gitingest"
+
+[lib]
+name = "gitingest"
+path = "src/lib.rs"
+
+[dependencies]
+# Shared workspace dependencies
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+dotenv = { workspace = true }
+
+# Core library specific dependencies
+git2 = { version = "0.18", features = ["https"] }
+reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
+thiserror = "1.0"
+log = "0.4"
+config = "0.14"
+walkdir = "2.4"
+ignore = "0.4"
+glob = "0.3"
+url = "2.5"
+mime = "0.3"
+tempfile = "3.8"
+futures = "0.3"
+async-trait = "0.1"
+regex = "1.10"
+globset = "0.4"
+mime_guess = "2.0"
+encoding_rs = "0.8"
+sha2 = "0.10"
+tokenizers = "0.15"
+chrono = { version = "0.4", features = ["serde"] }
+
+# Optional features can be managed within the library if needed
+
+[dev-dependencies]
+tokio-test = "0.4"

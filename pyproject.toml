@@ -1,0 +1,104 @@
+[build-system]
+requires = ["maturin>=1.4,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "fast-gitingest"
+dynamic = ["version"]
+description = "Fast Git repository ingestion and analysis tool"
+authors = [
+    {name = "Anang Aji Rahmawan", email = "aji.abuismail@gmail.com"},
+]
+license = {text = "MIT"}
+readme = "README.md"
+homepage = "https://github.com/0yik/fast-gitingest"
+repository = "https://github.com/0yik/fast-gitingest"
+documentation = "https://github.com/0yik/fast-gitingest"
+keywords = ["git", "repository", "analysis", "ingestion", "cli"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Rust",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Version Control :: Git",
+    "Topic :: Utilities",
+]
+requires-python = ">=3.8"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+fast-gitingest = "fast_gitingest:main"
+
+[project.urls]
+Homepage = "https://github.com/0yik/fast-gitingest"
+Repository = "https://github.com/0yik/fast-gitingest"
+Documentation = "https://github.com/0yik/fast-gitingest"
+"Bug Reports" = "https://github.com/0yik/fast-gitingest/issues"
+
+[tool.maturin]
+python-source = "python"
+manifest-path = "gitingest-python/Cargo.toml"
+module-name = "fast_gitingest.gitingest_python"
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = [
+    "tests",
+    "python/tests",
+]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 88
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.black]
+line-length = 88
+target-version = ["py38"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
