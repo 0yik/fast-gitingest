@@ -1,3 +1,6 @@
+#![allow(unsafe_op_in_unsafe_fn)]
+#![allow(non_local_definitions)]
+
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyType;
