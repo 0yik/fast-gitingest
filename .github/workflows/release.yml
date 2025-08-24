@@ -51,13 +51,15 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y musl-tools musl-dev
           
-          # Install musl cross-compiler
+          # Install musl cross-compiler with C++ support
           if [ "${{ matrix.target }}" = "x86_64-unknown-linux-musl" ]; then
-            sudo apt-get install -y musl-tools
-            sudo ln -sf /usr/bin/musl-gcc /usr/local/bin/x86_64-linux-musl-gcc
-            sudo ln -sf /usr/bin/musl-gcc /usr/local/bin/x86_64-linux-musl-g++
+            sudo apt-get install -y musl-tools musl-dev
+            # Install musl-based g++ compiler that includes C++ standard library
+            wget -q https://github.com/richfelker/musl-cross-make/releases/download/v0.9.9/x86_64-linux-musl-cross.tgz
+            tar -xzf x86_64-linux-musl-cross.tgz
+            sudo mv x86_64-linux-musl-cross /opt/
+            echo "/opt/x86_64-linux-musl-cross/bin" >> $GITHUB_PATH
           fi
           
           # Install ARM64 cross-compiler
@@ -81,6 +83,7 @@ jobs:
           if [ "${{ matrix.target }}" = "x86_64-unknown-linux-musl" ]; then
             echo "CC_x86_64_unknown_linux_musl=x86_64-linux-musl-gcc" >> $GITHUB_ENV
             echo "CXX_x86_64_unknown_linux_musl=x86_64-linux-musl-g++" >> $GITHUB_ENV
+            echo "CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=x86_64-linux-musl-gcc" >> $GITHUB_ENV
           fi
           
           if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
