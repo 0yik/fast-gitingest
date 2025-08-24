@@ -74,7 +74,8 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Set environment variables
+      - name: Set environment variables (Linux)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           # Set cross-compilation environment variables
           if [ "${{ matrix.target }}" = "x86_64-unknown-linux-musl" ]; then
