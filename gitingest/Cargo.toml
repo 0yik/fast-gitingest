@@ -21,8 +21,8 @@ tracing = { workspace = true }
 uuid = { workspace = true }
 dotenv = { workspace = true }
 
-# Core library specific dependencies
-git2 = { version = "0.18", features = ["https"] }
+# Core library specific dependencies  
+git2 = { version = "0.18", features = ["https", "vendored-openssl"] }
 reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
 thiserror = "1.0"
 log = "0.4"
